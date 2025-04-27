@@ -1,0 +1,8 @@
+{
+  "city": "resultlist_New York.parquet",
+  "dataset": [
+    {"query":  "I want a popular hotel that is very highly ranked. Furthermore my budget in total is 1000€.", "ranking": []},
+    {"query":  "I want a popular hotel that is very highly ranked. Furthermore my budget in total is 2000€, but it would be nice to spend as little as possible. I want to sit in a garden.", "ranking": ["Courtyard New York Manhattan/Times Square West", "Hotel 50 Bowery, part of JdV by Hyatt", "Hilton Garden Inn New York/West 35th Street"]},
+    {"query":  "I want a popular hotel that is very highly ranked. Furthermore my budget in total is 2000€. I want to either play some blackjack or go shopping.", "ranking": ["Hilton Garden Inn New York/West 35th Street", "Courtyard New York Manhattan/Times Square West", "Even Hotel New York - Midtown East 44th", "Washington Square Hotel", "World Center Hotel", "Club Quarters Hotel, World Trade Center", "The Shelburne Sonesta New York"]}
+  ]
+}

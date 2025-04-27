@@ -1,0 +1,6 @@
+pandas
+openai
+anthropic
+dotenv
+sentence-transformers
+numpy
