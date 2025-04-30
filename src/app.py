@@ -9,7 +9,7 @@ from parse_hotel_data import generate_features, generate_values
 
 
 def find_matching_hotels(
-        query: str, hotels: dict[str, dict[str, object]]
+    query: str, hotels: dict[str, dict[str, object]]
 ) -> list[str] | None:
     """
     Find matching hotels based on the given query.
@@ -46,7 +46,10 @@ def find_matching_hotels(
     filtered_hotels = {}
     for hotel_name, hotel in hotels.items():
         keep, constraint_function, repaired_parameters = evaluate_function(
-            constraint_function, hotel_values[hotel_name], parameter_embeddings, repaired_parameters=repaired_parameters
+            constraint_function,
+            hotel_values[hotel_name],
+            parameter_embeddings,
+            repaired_parameters=repaired_parameters,
         )
         if keep:
             filtered_hotels[hotel_name] = hotel
@@ -55,7 +58,10 @@ def find_matching_hotels(
     score_dict = {}
     for hotel_name, hotel in hotels.items():
         score, preference_function, repaired_parameters = evaluate_function(
-            preference_function, hotel_values[hotel_name], parameter_embeddings, repaired_parameters=repaired_parameters
+            preference_function,
+            hotel_values[hotel_name],
+            parameter_embeddings,
+            repaired_parameters=repaired_parameters,
         )
         score_dict[hotel_name] = score
 
@@ -72,8 +78,11 @@ def find_matching_hotels(
 
 
 if __name__ == "__main__":
-    user_query = "I want a popular hotel that is very highly ranked. Furthermore my budget in total is 2000€. I want to either play some blackjack or go shopping."
-    data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "hotels")
+    user_query = ("I want a popular hotel that is very highly ranked. Furthermore my budget in total is 2000€. I want "
+                  "to either play some blackjack or go shopping.")
+    data_dir = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)), "data", "hotels"
+    )
     mallorca_df = pd.read_parquet(os.path.join(data_dir, "resultlist_New York.parquet"))
     mallorca_dict = {
         row["hotel_name"]: row.to_dict() for _, row in mallorca_df.iterrows()

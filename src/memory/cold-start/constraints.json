@@ -1,0 +1,6 @@
+[
+    {
+        "user": "I'm planning a vacation with my 8-month-old baby and need a hotel that's really family-friendly. We'd prefer a place with breakfast included at minimum. My budget is around $200 per night.",
+        "assistant": "def constraint_function() -> bool:\n    # Price constraint: must be under $250\n    price_constraint = pricepernight <= 250\n    \n    # Meal constraint: must have at least breakfast\n    meal_constraint = mealtype in ['breakfast', 'half_board', 'all_inclusive']\n    \n    # Baby essentials constraints: must have at least 2 of these essential baby amenities\n    essential_baby_amenities = [\n        kinder_orbabybetten_auf_anfrage,\n        kinderhochstuhl,\n        wickeltisch\n    ]\n    \n    baby_essentials_count = sum(essential_baby_amenities)\n    baby_constraint = baby_essentials_count >= 2\n    \n    # All constraints must be satisfied\n    return price_constraint and meal_constraint and baby_constraint"
+    }
+]

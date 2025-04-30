@@ -1,8 +1,9 @@
+from typing import Literal, Optional
+
 import numpy as np
-from openai import OpenAI
+from openai import OpenAI, BaseModel
 from anthropic import Anthropic
 from dotenv import load_dotenv
-from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer
 from datetime import datetime
 import os
@@ -17,14 +18,20 @@ DEBUG = os.getenv("DEBUG", True)
 
 if OPENAPI_TYPE == "openai":
     API_KEY = os.getenv("OPENAI_API_KEY", "non-existing")
-    client = OpenAI(
-        api_key=API_KEY
-    )
-    model_name = "gpt-4.1"
+    client = OpenAI(api_key=API_KEY)
+    main_model = "gpt-4.1"
+    embedding_model = "text-embedding-3-large"
+    embedding_client = client
 elif OPENAPI_TYPE == "anthropic":
     API_KEY = os.getenv("ANTHROPIC_API_KEY", "non-existing")
     client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-    model_name = "claude-3.7-sonnet"
+    main_model = "claude-3.7-sonnet"
+    embedding_client = None
+    if EMBEDDING_API_KEY := os.getenv("OPENAI_API_KEY", None):
+        embedding_client = OpenAI(api_key=API_KEY)
+        embedding_model = "text-embedding-3-large"
+    else:
+        embedding_model = "all-MiniLM-L6-v2"
 else:
     raise ValueError(f"Your API type {OPENAPI_TYPE} is invalid.")
 
@@ -48,17 +55,14 @@ def _save(text: str, prefix: str, dir_name: str) -> None:
 
 
 def generate_structured_completion_openai(
-    user_prompt: str,
+    messages: list[dict],
     system_prompt: str,
     schema: BaseModel,
-    model: str = model_name,
+    model: str = main_model,
     save_prefix: str = None,
 ) -> BaseModel | None:
     """Generate a structured response without streaming."""
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_prompt},
-    ]
+    messages.insert(0, {"role": "system", "content": system_prompt})
     try:
         completion = client.beta.chat.completions.parse(
             model=model,  # Use your deployed model name
@@ -83,16 +87,12 @@ def generate_structured_completion_openai(
 
 
 def generate_structured_completion_anthropic(
-    user_prompt: str,
+    messages: list[dict],
     system_prompt: str,
     schema: BaseModel,
-    model: str = model_name,
+    model: str = main_model,
     save_prefix: str = None,
 ) -> BaseModel | None:
-    messages = [
-        {"role": "user", "content": user_prompt},
-    ]
-
     response = client.messages.create(
         model=model,
         max_tokens=1024,
@@ -104,7 +104,7 @@ def generate_structured_completion_anthropic(
                 "description": "Your response",
                 "input_schema": schema.model_json_schema(),
             }
-        ]
+        ],
     )
     result = None
     for content_block in response.content:
@@ -130,28 +130,46 @@ def generate_structured_completion(
     user_prompt: str,
     system_prompt: str,
     schema: BaseModel,
-    model: str = model_name,
-    save_prefix: str = None,
+    few_shots: Optional[list[tuple[str, str]]] = None,
+    model: str = main_model,
+    save_prefix: Optional[str] = None,
 ) -> BaseModel | None:
+    messages = []
+    for user, assistant in few_shots:
+        messages.append({"role": "user", "content": user})
+        messages.append({"role": "assistant", "content": assistant})
+    messages.append({"role": "user", "content": user_prompt})
+
     if OPENAPI_TYPE == "anthropic":
-        return generate_structured_completion_anthropic(user_prompt, system_prompt, schema, save_prefix=save_prefix)
+        return generate_structured_completion_anthropic(
+            messages, system_prompt, schema, model=model, save_prefix=save_prefix
+        )
     elif OPENAPI_TYPE == "openai":
-        return generate_structured_completion_openai(user_prompt, system_prompt, schema, model=model, save_prefix=save_prefix)
+        return generate_structured_completion_openai(
+            messages, system_prompt, schema, model=model, save_prefix=save_prefix
+        )
 
 
 def generate_embeddings_for_list(
-    inputs: list[str], embedding_model: str = "all-MiniLM-L6-v2"
+    inputs: list[str],
+    model: Literal[
+        "all-MiniLM-L6-v2", "text-embedding-3-small", "text-embedding-3-large"
+    ] = embedding_model,
 ) -> dict[str, np.ndarray]:
     """
     Generates embeddings for a list of names and returns a dictionary
     mapping each name to its embedding vector using a local sentence-transformers model.
     """
 
-    # Load the local model
-    model = SentenceTransformer(embedding_model)
-
-    # Generate embeddings for all inputs at once
-    embeddings = model.encode(inputs)
+    if model in ["all-MiniLM-L6-v2"]:
+        model = SentenceTransformer(model)
+        embeddings = model.encode(inputs)
+    else:
+        response = client.embeddings.create(
+            input=inputs,
+            model=model
+        )
+        embeddings = [x.embedding for x in response.data]
 
     return {name: embedding for name, embedding in zip(inputs, embeddings)}
 

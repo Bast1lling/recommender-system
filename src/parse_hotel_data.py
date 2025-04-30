@@ -411,7 +411,7 @@ variable_explanation_dict = {
     "direkter__strandzugang__(privater__strand)": "",
     "ipod_dockingstation": "",
     "ländlich": "",
-    "übergroße__badewanne": ""
+    "übergroße__badewanne": "",
 }
 
 
@@ -428,7 +428,7 @@ def generate_features(hotels: dict[str, dict[str, object]]) -> dict[str, any]:
         "clusterid",
         "deviceoutput",
         "ltr_score",
-        "bookingshare"
+        "bookingshare",
     ]
     features = {}
 
@@ -442,7 +442,7 @@ def generate_features(hotels: dict[str, dict[str, object]]) -> dict[str, any]:
             key = key.lower().replace(" ", "_").replace("/", "or").replace("-", "_")
 
             if isinstance(value, bool) or (
-                    isinstance(value, int) and (value == 1 or value == 0 and key != "wlan")
+                isinstance(value, int) and (value == 1 or value == 0 and key != "wlan")
             ):
                 features[key] = True
             elif isinstance(value, float) or isinstance(value, int):
@@ -472,7 +472,7 @@ def generate_features(hotels: dict[str, dict[str, object]]) -> dict[str, any]:
         elif isinstance(value, set) and len(value) == 1:
             continue
         elif isinstance(value, tuple) and (
-                (value[0] == math.inf and value[1] == -math.inf) or (value[0] == value[1])
+            (value[0] == math.inf and value[1] == -math.inf) or (value[0] == value[1])
         ):
             continue
         else:
@@ -482,7 +482,7 @@ def generate_features(hotels: dict[str, dict[str, object]]) -> dict[str, any]:
 
 
 def generate_values(
-        hotels: dict[str, dict[str, object]], features: dict[str, any]
+    hotels: dict[str, dict[str, object]], features: dict[str, any]
 ) -> dict[str, dict[str, any]]:
     hotel_values = {}
     for hotel_name, hotel_data in hotels.items():

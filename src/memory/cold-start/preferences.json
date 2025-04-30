@@ -1,0 +1,6 @@
+[
+    {
+        "user": "I'm planning a vacation with my 8-month-old baby and need a hotel that's really family-friendly. We'd prefer a place with breakfast included at minimum. My budget is around $200 per night.",
+        "assistant": "def preference_function() -> float:\n    price_score = 1 / (1 + np.exp(pricepernight / 100 - 2))\n    baby_friendly_variables = [\n        baby_or_kinderbetreuung,\n        babybadewanne,\n        kinder_orbabybetten_auf_anfrage,\n        kinderbetreuung_im_zimmer,\n        kinderhochstuhl,\n        kindermahlzeiten,\n        wickeltisch,\n        betreute_kinderaktivitäten,\n        buggys,\n        geschirr_für_kinder\n    ]\n    baby_score = sum(baby_friendly_variables) / (len(baby_friendly_variables) + 1e-9)\n    meal_scores = {\n        'only_stay': 0.0,  # No meals, doesn't meet requirement\n        'breakfast': 1.0,  # Meets minimum requirement\n        'half_board': 1.2,  # Better than minimum\n        'all_inclusive': 1.5  # Best option\n    }\n    meal_score = meal_scores[mealtype]\n    total_score = (0.3 * price_score) + (0.4 * baby_score) + (0.3 * meal_score)\n    return total_score"
+    }
+]
